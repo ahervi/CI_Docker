@@ -1,0 +1,116 @@
+heat_template_version: ocata
+
+description: template for a MONGO server and a BASTION host
+
+parameters:
+  key:
+    type: string
+    description: Key Name
+
+resources:
+  prod_security_group:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: "Open all the ports inside the production network"
+      rules:
+        - remote_ip_prefix: 192.168.2.0/24
+          protocol: tcp
+        - remote_ip_prefix: 192.168.2.0/24
+          protocol: udp
+        - remote_ip_prefix: 192.168.2.0/24
+          protocol: icmp
+
+  gitlab_net:
+    type: OS::Neutron::Net
+    properties:
+      name: "gitlab_net"
+
+  gitlab_subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: gitlab_net }
+      cidr: "192.168.2.0/24"
+      dns_nameservers: [ "192.44.75.10" ]
+      ip_version: 4
+      allocation_pools:
+        - start: "192.168.2.1"
+          end: "192.168.2.254"
+      name: "gitlab_subnet"
+
+  gateway_router:
+    type: OS::Neutron::Router
+    properties:
+      external_gateway_info:
+        network: external
+      name: "gateway_router"
+
+  gateway_router_interface:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: { get_resource: gateway_router}
+      subnet_id: { get_resource: gitlab_subnet}
+
+  gitlab_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: gitlab_net}
+      security_groups: [ get_resource: prod_security_group]
+      fixed_ips:
+        - subnet_id: { get_resource: gitlab_subnet}
+          ip_address: 192.168.2.1
+  
+  registry_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: gitlab_net}
+      security_groups: [ get_resource: prod_security_group]
+      fixed_ips:
+        - subnet_id: { get_resource: gitlab_subnet}
+          ip_address: 192.168.2.2
+
+  gitlab:
+    type: OS::Nova::Server
+    properties:
+      name: gitlab
+      image: ubuntu_18.04.latest
+      flavor: m1.small
+      key_name: { get_param: key}
+      networks:
+        - port: { get_resource: gitlab_port }
+      user_data: |
+        #!/bin/bash
+        export IP=`ifconfig ens3 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+        export HOSTNAME=`hostname`
+        tee -a /etc/hosts <<EOF
+        $IP $HOSTNAME
+        EOF
+        export DEBIAN_FRONTEND=noninteractive
+        export TERM="xterm"
+        echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
+        localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
+        apt-get -y update
+        reboot
+
+  registry:
+    type: OS::Nova::Server
+    properties:
+      name: registry
+      image: ubuntu_18.04.latest
+      flavor: m1.small
+      key_name: { get_param: key}
+      networks:
+        - port: { get_resource: registry_port }
+      user_data: |
+        #!/bin/bash
+        export IP=`ifconfig ens3 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+        export HOSTNAME=`hostname`
+        tee -a /etc/hosts <<EOF
+        $IP $HOSTNAME
+        EOF
+        export DEBIAN_FRONTEND=noninteractive
+        export TERM="xterm"
+        echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
+        localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
+        apt-get -y update
+        reboot
+
