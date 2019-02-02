@@ -5,7 +5,7 @@ description: Projet Docker
 parameters:
   key:
     type: string
-    description: Key Name
+    description: MYKEY
 
 resources:
   prod_security_group:
@@ -20,6 +20,18 @@ resources:
         - remote_ip_prefix: 192.168.2.0/24
           protocol: icmp
 
+  external_security_group:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      description: "Open ssh port"
+      rules:
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: tcp
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: udp
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: icmp
+ 
   gitlab_net:
     type: OS::Neutron::Net
     properties:
@@ -54,7 +66,7 @@ resources:
     type: OS::Neutron::Port
     properties:
       network_id: { get_resource: gitlab_net}
-      security_groups: [ get_resource: prod_security_group]
+      security_groups: [ get_resource: external_security_group]
       fixed_ips:
         - subnet_id: { get_resource: gitlab_subnet}
           ip_address: 192.168.2.130
@@ -66,7 +78,7 @@ resources:
       security_groups: [ get_resource: prod_security_group]
       fixed_ips:
         - subnet_id: { get_resource: gitlab_subnet}
-          ip_address: 192.168.2.101
+          ip_address: 192.168.2.112
 
   registry_port:
     type: OS::Neutron::Port
@@ -75,7 +87,7 @@ resources:
       security_groups: [ get_resource: prod_security_group]
       fixed_ips:
         - subnet_id: { get_resource: gitlab_subnet}
-          ip_address: 192.168.2.102
+          ip_address: 192.168.2.113
 
   personnel_port:
     type: OS::Neutron::Port
@@ -84,7 +96,8 @@ resources:
       security_groups: [ get_resource: prod_security_group]
       fixed_ips:
         - subnet_id: { get_resource: gitlab_subnet}
-          ip_address: 192.168.2.110
+          ip_address: 192.168.2.120
+
   bastion:
     type: OS::Nova::Server
     properties:
@@ -172,3 +185,10 @@ resources:
         echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
         localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
         apt-get -y update
+
+
+  association:
+    type: OS::Neutron::FloatingIPAssociation
+    properties:
+      floatingip_id: d8045f4a-b77d-474d-a430-bf9ec76c3553
+      port_id: { get_resource: bastion_port }
