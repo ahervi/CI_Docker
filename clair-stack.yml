@@ -1,6 +1,6 @@
-heat_template_version: ocata
+heat_template_version: rocky
 
-description: template for a MONGO server and a BASTION host
+description: Projet Docker
 
 parameters:
   key:
@@ -33,8 +33,8 @@ resources:
       dns_nameservers: [ "192.44.75.10" ]
       ip_version: 4
       allocation_pools:
-        - start: "192.168.2.1"
-          end: "192.168.2.254"
+        - start: "192.168.2.100"
+          end: "192.168.2.200"
       name: "gitlab_subnet"
 
   gateway_router:
@@ -57,7 +57,7 @@ resources:
       security_groups: [ get_resource: prod_security_group]
       fixed_ips:
         - subnet_id: { get_resource: gitlab_subnet}
-          ip_address: 192.168.2.1
+          ip_address: 192.168.2.110
   
   registry_port:
     type: OS::Neutron::Port
@@ -66,13 +66,13 @@ resources:
       security_groups: [ get_resource: prod_security_group]
       fixed_ips:
         - subnet_id: { get_resource: gitlab_subnet}
-          ip_address: 192.168.2.2
+          ip_address: 192.168.2.111
 
   gitlab:
     type: OS::Nova::Server
     properties:
       name: gitlab
-      image: ubuntu_18.04.latest
+      image: ubuntu_18_current
       flavor: m1.small
       key_name: { get_param: key}
       networks:
@@ -95,7 +95,7 @@ resources:
     type: OS::Nova::Server
     properties:
       name: registry
-      image: ubuntu_18.04.latest
+      image: ubuntu_18_current
       flavor: m1.small
       key_name: { get_param: key}
       networks:
