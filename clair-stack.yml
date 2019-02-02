@@ -50,6 +50,15 @@ resources:
       router_id: { get_resource: gateway_router}
       subnet_id: { get_resource: gitlab_subnet}
 
+  bastion_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: gitlab_net}
+      security_groups: [ get_resource: prod_security_group]
+      fixed_ips:
+        - subnet_id: { get_resource: gitlab_subnet}
+          ip_address: 192.168.2.130
+
   gitlab_port:
     type: OS::Neutron::Port
     properties:
@@ -57,8 +66,8 @@ resources:
       security_groups: [ get_resource: prod_security_group]
       fixed_ips:
         - subnet_id: { get_resource: gitlab_subnet}
-          ip_address: 192.168.2.3
-  
+          ip_address: 192.168.2.101
+
   registry_port:
     type: OS::Neutron::Port
     properties:
@@ -66,7 +75,37 @@ resources:
       security_groups: [ get_resource: prod_security_group]
       fixed_ips:
         - subnet_id: { get_resource: gitlab_subnet}
-          ip_address: 192.168.2.4
+          ip_address: 192.168.2.102
+
+  personnel_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_resource: gitlab_net}
+      security_groups: [ get_resource: prod_security_group]
+      fixed_ips:
+        - subnet_id: { get_resource: gitlab_subnet}
+          ip_address: 192.168.2.110
+  bastion:
+    type: OS::Nova::Server
+    properties:
+      name: bastion
+      image: ubuntu_18_current
+      flavor: m1.small
+      key_name: { get_param: key}
+      networks:
+        - port: { get_resource: bastion_port }
+      user_data: |
+        #!/bin/bash
+        export IP=`ifconfig ens3 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+        export HOSTNAME=`hostname`
+        tee -a /etc/hosts <<EOF
+        $IP $HOSTNAME
+        EOF
+        export DEBIAN_FRONTEND=noninteractive
+        export TERM="xterm"
+        echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
+        localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
+        apt-get -y update
 
   gitlab:
     type: OS::Nova::Server
@@ -89,8 +128,7 @@ resources:
         echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
         localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
         apt-get -y update
-        reboot
-
+  
   registry:
     type: OS::Nova::Server
     properties:
@@ -112,5 +150,25 @@ resources:
         echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
         localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
         apt-get -y update
-        reboot
 
+  personnel:
+    type: OS::Nova::Server
+    properties:
+      name: personnel
+      image: ubuntu_18_current
+      flavor: m1.small
+      key_name: { get_param: key}
+      networks:
+        - port: { get_resource: personnel_port }
+      user_data: |
+        #!/bin/bash
+        export IP=`ifconfig ens3 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+        export HOSTNAME=`hostname`
+        tee -a /etc/hosts <<EOF
+        $IP $HOSTNAME
+        EOF
+        export DEBIAN_FRONTEND=noninteractive
+        export TERM="xterm"
+        echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
+        localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
+        apt-get -y update
