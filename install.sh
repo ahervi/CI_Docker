@@ -7,4 +7,8 @@ openstack --insecure
   keypair create --private-key ~/mykey MYKEY
   stack create --template clair-stack.yml --parameter key=MYKEY MYSTACK
 
-
+sudo apt update
+sudo apt-get install software-properties-common
+sudo apt-add-repository ppa:ansible/ansible
+sudo apt update
+sudo apt install ansible
