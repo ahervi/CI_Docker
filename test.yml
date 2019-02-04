@@ -14,17 +14,24 @@ resources:
       description: "Open all the ports inside the production network"
       rules:
         - remote_ip_prefix: 192.168.2.0/24
+          protocol: tcp
+        - remote_ip_prefix: 192.168.2.0/24
+          protocol: udp
+        - remote_ip_prefix: 192.168.2.0/24
+          protocol: icmp
 
   external_security_group:
     type: OS::Neutron::SecurityGroup
     properties:
-      description: "allow ssh and ping from outside"
+      description: "Open ssh port"
       rules:
-      - protocol: icmp
-      - protocol: tcp
-        port_range_min: 22
-        port_range_max: 22
-
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: tcp
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: udp
+        - remote_ip_prefix: 0.0.0.0/0
+          protocol: icmp
+ 
   gitlab_net:
     type: OS::Neutron::Net
     properties:
@@ -62,7 +69,7 @@ resources:
       security_groups: [ get_resource: external_security_group]
       fixed_ips:
         - subnet_id: { get_resource: gitlab_subnet}
-          ip_address: 192.168.2.2
+          ip_address: 192.168.2.130
 
   gitlab_port:
     type: OS::Neutron::Port
@@ -71,7 +78,7 @@ resources:
       security_groups: [ get_resource: prod_security_group]
       fixed_ips:
         - subnet_id: { get_resource: gitlab_subnet}
-          ip_address: 192.168.2.3
+          ip_address: 192.168.2.112
 
   registry_port:
     type: OS::Neutron::Port
@@ -80,7 +87,7 @@ resources:
       security_groups: [ get_resource: prod_security_group]
       fixed_ips:
         - subnet_id: { get_resource: gitlab_subnet}
-          ip_address: 192.168.2.4
+          ip_address: 192.168.2.113
 
   personnel_port:
     type: OS::Neutron::Port
@@ -89,7 +96,7 @@ resources:
       security_groups: [ get_resource: prod_security_group]
       fixed_ips:
         - subnet_id: { get_resource: gitlab_subnet}
-          ip_address: 192.168.2.5
+          ip_address: 192.168.2.120
 
   bastion:
     type: OS::Nova::Server
@@ -118,7 +125,7 @@ resources:
     properties:
       name: gitlab
       image: ubuntu_18_current
-      flavor: m1.xlarge
+      flavor: m1.small
       key_name: { get_param: key}
       networks:
         - port: { get_resource: gitlab_port }
