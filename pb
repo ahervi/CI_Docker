@@ -11,3 +11,12 @@ ubuntu@personnel:~$ wget https://download.docker.com/linux/ubuntu/dists/bionic/s
 --2019-02-04 22:29:38--  https://download.docker.com/linux/ubuntu/dists/bionic/stable/binary-amd64/Packages.bz2
 Resolving download.docker.com (download.docker.com)... 54.230.79.27, 54.230.79.142, 54.230.79.230, ...
 Connecting to download.docker.com (download.docker.com)|54.230.79.27|:443...
+
+TASK [geerlingguy.gitlab : Download GitLab repository installation script.] ****
+fatal: [gitlabhost]: FAILED! => {"changed": false, "msg": "Failed to connect to packages.gitlab.com at port 443: [Errno 110] Connection timed out"}
+	to retry, use: --limit @/home/eutherian/openstack_stuff/secure_docker_deployment/ansible/gitlab.retry
+
+PLAY RECAP *********************************************************************
+gitlabhost                 : ok=5    changed=0    unreachable=0    failed=1   
+
+

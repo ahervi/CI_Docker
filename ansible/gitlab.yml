@@ -1,0 +1,5 @@
+- hosts: gitlab
+  vars_files:
+    - roles.galaxy/geerlingguy.gitlab/defaults/main.yml
+  roles:
+    - { role: geerlingguy.gitlab, become: yes }

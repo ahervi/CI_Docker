@@ -1,7 +1,8 @@
 [gitlab]
-gitlabhost ansible_host=192.168.2.2 ansible_python_interpreter=/usr/bin/python3
+gitlabhost ansible_host=192.168.2.333nsible_python_interpreter=/usr/bin/python3
 
 [docker]
 gitlabhost ansible_host=192.168.2.3 ansible_python_interpreter=/usr/bin/python3 
 personnelhost ansible_host=192.168.2.4 ansible_python_interpreter=/usr/bin/python3
 registrehost ansible_host=192.168.2.5 ansible_python_interpreter=/usr/bin/python3
+
