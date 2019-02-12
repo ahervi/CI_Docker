@@ -6,6 +6,7 @@ source 201901_MSCS-container-security-openrc.sh
 openstack --insecure
   keypair create --private-key ~/mykey MYKEY
   stack create --template clair-stack.yml --parameter key=MYKEY MYSTACK
+chmod 700 mykey
 
 sudo apt update
 sudo apt-get install software-properties-common

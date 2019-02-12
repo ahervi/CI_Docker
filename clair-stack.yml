@@ -111,6 +111,9 @@ resources:
         export TERM="xterm"
         echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
         localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
+        echo "export http_proxy=http://proxy.enst-bretagne.fr:8080" >>   /etc/environment
+        echo " export https_proxy=$http_proxy " >>   /etc/environment
+        echo " export no_proxy='localhost,127.0.0.1' " >>   /etc/environment
         apt-get -y update
 
   gitlab:
@@ -133,7 +136,17 @@ resources:
         export TERM="xterm"
         echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
         localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
+        echo "export use_proxy=yes" >> /etc/environment
+        echo "export http_proxy=http://proxy.enst-bretagne.fr:8080" >>   /etc/environment
+        echo " export https_proxy=http://proxy.enst-bretagne.fr:8080 " >>   /etc/environment
+        echo " export no_proxy='localhost,127.0.0.1' " >>   /etc/environment
         apt-get -y update
+        export use_proxy=yes
+        export http_proxy=http://proxy.enst-bretagne.fr:8080
+        export https_proxy=http://proxy.enst-bretagne.fr:8080
+        export no_proxy='localhost,127.0.0.1'
+        wget -P /home/ubuntu http://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_darwin_amd64
+
   
   registry:
     type: OS::Nova::Server
@@ -155,7 +168,12 @@ resources:
         export TERM="xterm"
         echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
         localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
+        echo "export use_proxy=yes" >> /etc/environment
+        echo "export http_proxy=http://proxy.enst-bretagne.fr:8080" >>   /etc/environment
+        echo " export https_proxy=http://proxy.enst-bretagne.fr:8080 " >>   /etc/environment
+        echo " export no_proxy='localhost,127.0.0.1' " >>   /etc/environment
         apt-get -y update
+
 
   personnel:
     type: OS::Nova::Server
@@ -177,11 +195,22 @@ resources:
         export TERM="xterm"
         echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
         localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
+        echo "export use_proxy=yes" >> /etc/environment
+        echo "export http_proxy=http://proxy.enst-bretagne.fr:8080" >>   /etc/environment
+        echo " export https_proxy=http://proxy.enst-bretagne.fr:8080 " >>   /etc/environment
+        echo " export no_proxy='localhost,127.0.0.1' " >>   /etc/environment
         apt-get -y update
 
 
-  association:
+
+  association_ssh:
     type: OS::Neutron::FloatingIPAssociation
     properties:
       floatingip_id: d8045f4a-b77d-474d-a430-bf9ec76c3553
       port_id: { get_resource: bastion_port }
+
+  association_gitlab:
+    type: OS::Neutron::FloatingIPAssociation
+    properties:
+      floatingip_id: eef94fcc-a9c9-441a-a209-8d5fe1b8af64
+      port_id: { get_resource: gitlab_port }
