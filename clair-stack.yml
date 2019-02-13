@@ -146,7 +146,7 @@ resources:
         export https_proxy=http://proxy.enst-bretagne.fr:8080
         export no_proxy='localhost,127.0.0.1'
         wget -P /home/ubuntu http://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_darwin_amd64
-
+        chmod 700 /home/ubuntu/clair-scanner_darwin_amd64
   
   registry:
     type: OS::Nova::Server

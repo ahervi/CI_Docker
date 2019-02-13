@@ -1,5 +1,5 @@
 #!/bin/bash
-source 201901_MSCS-container-security-openrc.sh
+source *-openrc.sh
 openstack --insecure stack delete MYSTACK
 openstack --insecure keypair delete MYKEY
 sleep 5
