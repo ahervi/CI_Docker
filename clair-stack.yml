@@ -147,7 +147,6 @@ resources:
         export no_proxy='localhost,127.0.0.1'
         wget -P /home/ubuntu http://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_darwin_amd64
         chmod 700 /home/ubuntu/clair-scanner_darwin_amd64
-        export http_proxy='http://proxy.enst-bretagne.fr:8080'
         mkdir -p /etc/systemd/system/docker.service.d
         echo "[Service]" > /etc/systemd/system/docker.service.d/proxy.conf
         echo "Environment='HTTPS_PROXY=$http_proxy' 'HTTP_PROXY=$http_proxy'" >> /etc/systemd/system/docker.service.d/proxy.conf
@@ -183,7 +182,14 @@ resources:
         echo " export https_proxy=http://proxy.enst-bretagne.fr:8080 " >>   /etc/environment
         echo " export no_proxy='localhost,127.0.0.1' " >>   /etc/environment
         apt-get -y update
-
+        mkdir -p /etc/systemd/system/docker.service.d
+        echo "[Service]" > /etc/systemd/system/docker.service.d/proxy.conf
+        echo "Environment='HTTPS_PROXY=$http_proxy' 'HTTP_PROXY=$http_proxy'" >> /etc/systemd/system/docker.service.d/proxy.conf
+        systemctl daemon-reload
+        mkdir /etc/docker/
+        echo '{' > /etc/docker/daemon.json
+        echo '    "dns": ["192.44.75.10", "192.108.115.2"]' >> /etc/docker/daemon.json
+        echo '}' >> /etc/docker/daemon.json
 
   personnel:
     type: OS::Nova::Server
@@ -210,7 +216,14 @@ resources:
         echo " export https_proxy=http://proxy.enst-bretagne.fr:8080 " >>   /etc/environment
         echo " export no_proxy='localhost,127.0.0.1' " >>   /etc/environment
         apt-get -y update
-
+        mkdir -p /etc/systemd/system/docker.service.d
+        echo "[Service]" > /etc/systemd/system/docker.service.d/proxy.conf
+        echo "Environment='HTTPS_PROXY=$http_proxy' 'HTTP_PROXY=$http_proxy'" >> /etc/systemd/system/docker.service.d/proxy.conf
+        systemctl daemon-reload
+        mkdir /etc/docker/
+        echo '{' > /etc/docker/daemon.json
+        echo '    "dns": ["192.44.75.10", "192.108.115.2"]' >> /etc/docker/daemon.json
+        echo '}' >> /etc/docker/daemon.json
 
 
   association_ssh:
