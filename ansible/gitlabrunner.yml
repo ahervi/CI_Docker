@@ -1,0 +1,7 @@
+- hosts: "gitlab runner install"
+  roles:
+    - role: lean_delivery.gitlab_runner
+      vars:
+        gitlab_runner_concurrent: 1
+        gitlab_version: "10.5"
+        gitlab_runner_skip_registration: True

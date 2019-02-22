@@ -1,0 +1,13 @@
+- name: Pull and run the necessary images for clair-scanner
+  hosts: "gitlab"
+  
+  tasks:
+  - name: pull exe
+    shell: docker pull objectiflibre/clair-scanner
+
+  - name: pull db
+    shell: docker pull arminc/clair-db
+
+  - name: pull scanner
+    shell: docker pull arminc/clair-local-scan
+

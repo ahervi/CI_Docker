@@ -1,0 +1,12 @@
+- name: Pull and run the registry
+  hosts: "registry"
+  
+  tasks:
+  - name: pull registry
+    become: yes
+    shell: docker pull registry:2
+
+  - name: run registry
+    become: yes
+    shell: docker run -d -p 5000:5000 --restart always --name registry registry:2
+
