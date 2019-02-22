@@ -113,11 +113,11 @@ resources:
         localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
         echo "export http_proxy=http://proxy.enst-bretagne.fr:8080" >>   /etc/environment
         echo " export https_proxy=http://proxy.enst-bretagne.fr:8080 " >>   /etc/environment
-        echo " export no_proxy=localhost,127.0.0.1,projet_indu " >>   /etc/environment
+        echo " export no_proxy=localhost,127.0.0.1,192.168.2.3 " >>   /etc/environment
         export use_proxy=yes
         export http_proxy="http://proxy.enst-bretagne.fr:8080"
         export https_proxy="http://proxy.enst-bretagne.fr:8080"
-        export no_proxy="localhost,127.0.0.1,projet_indu"
+        export no_proxy=localhost,127.0.0.1,192.168.2.3
         apt-get -y update
 
   gitlab:
@@ -143,13 +143,13 @@ resources:
         echo "export use_proxy=yes" >> /etc/environment
         echo "export http_proxy=http://proxy.enst-bretagne.fr:8080" >>   /etc/environment
         echo " export https_proxy=http://proxy.enst-bretagne.fr:8080 " >>   /etc/environment
-        echo " export no_proxy='localhost,127.0.0.1,projet_indu' " >>   /etc/environment
+        echo " export no_proxy=localhost,127.0.0.1,192.168.2.3 " >>   /etc/environment
         #wget -P /home/ubuntu http://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_darwin_amd64
         #chmod 700 /home/ubuntu/clair-scanner_darwin_amd64
         export use_proxy=yes
         export http_proxy="http://proxy.enst-bretagne.fr:8080"
         export https_proxy="http://proxy.enst-bretagne.fr:8080"
-        export no_proxy="localhost,127.0.0.1,projet_indu"
+        export no_proxy=localhost,127.0.0.1,192.168.2.3
         mkdir -p /etc/systemd/system/docker.service.d
         echo "[Service]" > /etc/systemd/system/docker.service.d/proxy.conf
         echo "Environment='HTTPS_PROXY=http://proxy.enst-bretagne.fr:8080' 'HTTP_PROXY=http://proxy.enst-bretagne.fr:8080'" >> /etc/systemd/system/docker.service.d/proxy.conf
@@ -185,11 +185,11 @@ resources:
         echo "export use_proxy=yes" >> /etc/environment
         echo "export http_proxy=http://proxy.enst-bretagne.fr:8080" >>   /etc/environment
         echo " export https_proxy=http://proxy.enst-bretagne.fr:8080 " >>   /etc/environment
-        echo " export no_proxy='localhost,127.0.0.1,projet_indu' " >>   /etc/environment
+        echo " export no_proxy=localhost,127.0.0.1,192.168.2.3 " >>   /etc/environment
         export use_proxy=yes
         export http_proxy="http://proxy.enst-bretagne.fr:8080"
         export https_proxy="http://proxy.enst-bretagne.fr:8080"
-        export no_proxy="localhost,127.0.0.1,projet_indu"
+        export no_proxy=localhost,127.0.0.1,192.168.2.3
         mkdir -p /etc/systemd/system/docker.service.d
         echo "[Service]" > /etc/systemd/system/docker.service.d/proxy.conf
         echo "Environment='HTTPS_PROXY=http://proxy.enst-bretagne.fr:8080' 'HTTP_PROXY=http://proxy.enst-bretagne.fr:8080'" >> /etc/systemd/system/docker.service.d/proxy.conf
@@ -225,11 +225,12 @@ resources:
         echo "export use_proxy=yes" >> /etc/environment
         echo "export http_proxy=http://proxy.enst-bretagne.fr:8080" >>   /etc/environment
         echo " export https_proxy=http://proxy.enst-bretagne.fr:8080 " >>   /etc/environment
-        echo " export no_proxy='localhost,127.0.0.1,projet_indu' " >>   /etc/environment
+        echo " export no_proxy=localhost,127.0.0.1,192.168.2.3 " >>   /etc/environment
         export use_proxy=yes
         export http_proxy="http://proxy.enst-bretagne.fr:8080"
         export https_proxy="http://proxy.enst-bretagne.fr:8080"
-        export no_proxy="localhost,127.0.0.1,projet_indu"
+        export no_proxy=localhost,127.0.0.1,192.168.2.3
+        export GIT_SSL_NO_VERIFY=true
         mkdir -p /etc/systemd/system/docker.service.d
         echo "[Service]" > /etc/systemd/system/docker.service.d/proxy.conf
         echo "Environment='HTTPS_PROXY=http://proxy.enst-bretagne.fr:8080' 'HTTP_PROXY=http://proxy.enst-bretagne.fr:8080'" >> /etc/systemd/system/docker.service.d/proxy.conf
