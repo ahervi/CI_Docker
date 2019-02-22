@@ -15,7 +15,11 @@ ssh-keygen -f ~/.ssh/known_hosts -R 192.168.2.4
 ssh-keygen -f ~/.ssh/known_hosts -R 192.168.2.5
 scp -o StrictHostKeyChecking=no -i mykey mykey $HOSTNAME_BASTION@$IP_FLOTTANTE_BASTION:/home/$HOSTNAME_BASTION
 cd ansible/
-ansible-playbook -i inventory -u ubuntu --private-key ../mykey docker.yml
 ansible-playbook -i inventory -u ubuntu --private-key ../mykey gitlab.yml
-echo "OK ! :D"
-
+ansible-playbook -i inventory -u ubuntu --private-key ../mykey gitlabrunner.yml
+read -p "Connecter vous à https://10.29.244.29/admin/runners, changer le mot de passe de root sur le gitlab et copier le registration token du runner ici : " TOKEN
+cp registrationrunner.yml.clean registrationrunner.yml
+sed -i "s/TOKENHERE/$TOKEN/g" registrationrunner.yml 
+ansible-playbook -i inventory -u ubuntu --private-key ../mykey registrationrunner.yml
+ansible-playbook -i inventory -u ubuntu --private-key ../mykey docker.yml
+ansible-playbook -i inventory -u ubuntu --private-key ../mykey registrypull.yml

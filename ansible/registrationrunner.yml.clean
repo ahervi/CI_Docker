@@ -1,0 +1,18 @@
+- name: register the runner
+  hosts: "gitlab"
+  
+  tasks:
+
+  - name: add ca 
+    become: yes
+    shell: cp /etc/gitlab/ssl/gitlab.crt /usr/local/share/ca-certificates/gitlab.crt
+
+  - name: update ca
+    become: yes
+    shell: update-ca-certificates
+
+  - name: register runner
+    become: yes
+    shell: gitlab-runner register --non-interactive --url "https://localhost/" --registration-token "TOKENHERE" --executor "shell" --shell "bash" --description "runner" --tag-list "TOKENHERE" --run-untagged
+
+

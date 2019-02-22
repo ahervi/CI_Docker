@@ -112,8 +112,12 @@ resources:
         echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
         localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
         echo "export http_proxy=http://proxy.enst-bretagne.fr:8080" >>   /etc/environment
-        echo " export https_proxy=$http_proxy " >>   /etc/environment
-        echo " export no_proxy='localhost,127.0.0.1' " >>   /etc/environment
+        echo " export https_proxy=http://proxy.enst-bretagne.fr:8080 " >>   /etc/environment
+        echo " export no_proxy='localhost,127.0.0.1,projet_indu' " >>   /etc/environment
+        export use_proxy=yes
+        export http_proxy="http://proxy.enst-bretagne.fr:8080"
+        export https_proxy="http://proxy.enst-bretagne.fr:8080"
+        export no_proxy="localhost,127.0.0.1"
         apt-get -y update
 
   gitlab:
@@ -140,22 +144,21 @@ resources:
         echo "export http_proxy=http://proxy.enst-bretagne.fr:8080" >>   /etc/environment
         echo " export https_proxy=http://proxy.enst-bretagne.fr:8080 " >>   /etc/environment
         echo " export no_proxy='localhost,127.0.0.1' " >>   /etc/environment
-        apt-get -y update
+        #wget -P /home/ubuntu http://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_darwin_amd64
+        #chmod 700 /home/ubuntu/clair-scanner_darwin_amd64
         export use_proxy=yes
-        export http_proxy=http://proxy.enst-bretagne.fr:8080
-        export https_proxy=http://proxy.enst-bretagne.fr:8080
-        export no_proxy='localhost,127.0.0.1'
-        wget -P /home/ubuntu http://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_darwin_amd64
-        chmod 700 /home/ubuntu/clair-scanner_darwin_amd64
-        export http_proxy='http://proxy.enst-bretagne.fr:8080'
+        export http_proxy="http://proxy.enst-bretagne.fr:8080"
+        export https_proxy="http://proxy.enst-bretagne.fr:8080"
+        export no_proxy="localhost,127.0.0.1,projet_indu"
         mkdir -p /etc/systemd/system/docker.service.d
         echo "[Service]" > /etc/systemd/system/docker.service.d/proxy.conf
-        echo "Environment='HTTPS_PROXY=$http_proxy' 'HTTP_PROXY=$http_proxy'" >> /etc/systemd/system/docker.service.d/proxy.conf
+        echo "Environment='HTTPS_PROXY=http://proxy.enst-bretagne.fr:8080' 'HTTP_PROXY=http://proxy.enst-bretagne.fr:8080'" >> /etc/systemd/system/docker.service.d/proxy.conf
         systemctl daemon-reload
         mkdir /etc/docker/
         echo '{' > /etc/docker/daemon.json
         echo '    "dns": ["192.44.75.10", "192.108.115.2"]' >> /etc/docker/daemon.json
         echo '}' >> /etc/docker/daemon.json
+        apt-get -y update
 
   
   registry:
@@ -182,6 +185,18 @@ resources:
         echo "export http_proxy=http://proxy.enst-bretagne.fr:8080" >>   /etc/environment
         echo " export https_proxy=http://proxy.enst-bretagne.fr:8080 " >>   /etc/environment
         echo " export no_proxy='localhost,127.0.0.1' " >>   /etc/environment
+        export use_proxy=yes
+        export http_proxy="http://proxy.enst-bretagne.fr:8080"
+        export https_proxy="http://proxy.enst-bretagne.fr:8080"
+        export no_proxy="localhost,127.0.0.1,projet_indu"
+        mkdir -p /etc/systemd/system/docker.service.d
+        echo "[Service]" > /etc/systemd/system/docker.service.d/proxy.conf
+        echo "Environment='HTTPS_PROXY=http://proxy.enst-bretagne.fr:8080' 'HTTP_PROXY=http://proxy.enst-bretagne.fr:8080'" >> /etc/systemd/system/docker.service.d/proxy.conf
+        systemctl daemon-reload
+        mkdir /etc/docker/
+        echo '{' > /etc/docker/daemon.json
+        echo '    "dns": ["192.44.75.10", "192.108.115.2"]' >> /etc/docker/daemon.json
+        echo '}' >> /etc/docker/daemon.json
         apt-get -y update
 
 
@@ -209,6 +224,18 @@ resources:
         echo "export http_proxy=http://proxy.enst-bretagne.fr:8080" >>   /etc/environment
         echo " export https_proxy=http://proxy.enst-bretagne.fr:8080 " >>   /etc/environment
         echo " export no_proxy='localhost,127.0.0.1' " >>   /etc/environment
+        export use_proxy=yes
+        export http_proxy="http://proxy.enst-bretagne.fr:8080"
+        export https_proxy="http://proxy.enst-bretagne.fr:8080"
+        export no_proxy="localhost,127.0.0.1,projet_indu"
+        mkdir -p /etc/systemd/system/docker.service.d
+        echo "[Service]" > /etc/systemd/system/docker.service.d/proxy.conf
+        echo "Environment='HTTPS_PROXY=http://proxy.enst-bretagne.fr:8080' 'HTTP_PROXY=http://proxy.enst-bretagne.fr:8080'" >> /etc/systemd/system/docker.service.d/proxy.conf
+        systemctl daemon-reload
+        mkdir /etc/docker/
+        echo '{' > /etc/docker/daemon.json
+        echo '    "dns": ["192.44.75.10", "192.108.115.2"]' >> /etc/docker/daemon.json
+        echo '}' >> /etc/docker/daemon.json
         apt-get -y update
 
 
