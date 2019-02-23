@@ -230,7 +230,7 @@ resources:
         export http_proxy="http://proxy.enst-bretagne.fr:8080"
         export https_proxy="http://proxy.enst-bretagne.fr:8080"
         export no_proxy=localhost,127.0.0.1,192.168.2.3
-        export GIT_SSL_NO_VERIFY=true
+        #export GIT_SSL_NO_VERIFY=true
         mkdir -p /etc/systemd/system/docker.service.d
         echo "[Service]" > /etc/systemd/system/docker.service.d/proxy.conf
         echo "Environment='HTTPS_PROXY=http://proxy.enst-bretagne.fr:8080' 'HTTP_PROXY=http://proxy.enst-bretagne.fr:8080'" >> /etc/systemd/system/docker.service.d/proxy.conf
