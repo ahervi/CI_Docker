@@ -3,11 +3,14 @@
   
   tasks:
   - name: pull exe
+    become: yes
     shell: docker pull objectiflibre/clair-scanner
 
   - name: pull db
+    become: yes
     shell: docker pull arminc/clair-db
 
   - name: pull scanner
+    become: yes
     shell: docker pull arminc/clair-local-scan
 

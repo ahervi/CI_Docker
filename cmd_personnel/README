@@ -1,0 +1,55 @@
+README
+
+
+1. Cloner ce repo
+2. Télécharger son propre fichier source et remplacer celui à la racine
+3. Installer les paquets de paquets_initiaux_hôtes.sh
+3. Être prêt à voir supprimer la clé MYKEY et la stack MYSTACK de son compte car elle vont être crées
+4. Se connecter au VPN de l'école
+5. ./automatic_install.sh
+  5.1 Entrer son mdp
+  5.2 Dire y pour supprimer la stack MYSTACK
+    5.2.1 Si la stack était inexistante, le message suivant est normal : Stack not found: MYSTACK Unable to delete 1 of the 1 stacks.
+
+  5.3 Patienter jusqu'à ce que l'on demande le registration token
+  5.4 Suivre les instructions et entrer le registration token
+  5.5 attendre la fin du script
+ 
+ 6. Créer un utilisateur sur le gitlab et un repo via l'interface graphique
+ 7. Se connecter au personnel :
+ssh -i mykey -X ubuntu@10.29.244.44
+ssh -i mykey 192.168.2.5
+
+ 8. Cloner le repo :
+export GIT_SSL_NO_VERIFY=true
+git clone https://192.168.2.3/hlk/test.git
+
+9. Créer un fichier Dockerfile avec "from debian" comme contenu
+10. Créer un fichier .gitlab-ci.yml avec 
+
+build_image:
+  stage: build
+  script:
+    - docker build --no-cache -t myimage .
+
+scan_image:
+  before_script:
+    - docker network create scanning
+    - docker run -p 5432:5432 -d --net=scanning --name db arminc/clair-db:2017-09-18; sleep 30
+    - docker run -p 6060:6060  --net=scanning --link db:postgres -d --name clair arminc/clair-local-scan:v2.0.6 ; sleep 30
+  script:
+    - docker run --net=scanning --rm --name=scanner --link=clair:clair -v '/var/run/docker.sock:/var/run/docker.sock' objectiflibre/clair-scanner --clair="http://clair:6060" --ip="scanner" -t Medium myimage || true
+    - docker tag myimage 192.168.2.4:5000/myimage
+    - docker push 192.168.2.4:5000/myimage
+  after_script:
+    - docker rm -vf db clair
+    - docker network rm scanning
+
+11. add commit et push pour lancer la CI
+git config --global user.email  "hlk@example.com" 
+git config --global user.name "hlk"
+git add . 
+git commit -m "test" 
+git push
+
+12. Aller sur le gitlab pour voir le résultat

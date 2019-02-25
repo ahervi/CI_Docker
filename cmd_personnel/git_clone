@@ -1,2 +1,0 @@
-export GIT_SSL_NO_VERIFY=true
-git clone http://192.168.2.3/hlk/test.git

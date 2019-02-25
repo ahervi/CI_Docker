@@ -1,13 +1,31 @@
+#Ce template permet la création d'une architecture OpenStack visant à déployer un système de scan 
+# automatique d'image Docker.
+
+#Quatre entités sont présentes :
+# - Bastion : Machine d'administration des autres machines ;
+# - Personnel : représente le personnel de l'école capable de modifier un repértoire git issu 
+# de la machine gitlab ;
+# - Gitlab : un serveur gitlab où aura lieu les scans avec Clair ;
+# - Registre : un registre Docker qui interagira avec le serveur Gitlab.
+
 heat_template_version: rocky
 
 description: Projet Docker
 
+#La clé d'accès utilisé pour se connecter en SSH au bastion
 parameters:
   key:
     type: string
     description: MYKEY
 
+
+
+
 resources:
+#Les groupes de sécurité sont permissifs pour l'instant, ils pourront être restreints plus tard
+# si le temps le permet.
+
+  #Le groupe de sécurité du LAN interne : tout est autorisé pour l'instant.
   prod_security_group:
     type: OS::Neutron::SecurityGroup
     properties:
@@ -15,6 +33,7 @@ resources:
       rules:
         - remote_ip_prefix: 0.0.0.0/0
 
+  #Le groupe de sécurité vers l'extérieur : seul SSH et ICMP sont autorisés.
   external_security_group:
     type: OS::Neutron::SecurityGroup
     properties:
@@ -24,7 +43,8 @@ resources:
       - protocol: tcp
         port_range_min: 22
         port_range_max: 22
-
+  
+#Le sous réseaux du LAN est simple : 192.168.2.0/24
   gitlab_net:
     type: OS::Neutron::Net
     properties:
@@ -55,6 +75,11 @@ resources:
       router_id: { get_resource: gateway_router}
       subnet_id: { get_resource: gitlab_subnet}
 
+#On passe à l'adressage des machines :
+# - le bastion est en 192.168.2.2 ;
+# - le serveur gitlab est en 192.168.2.3 ;
+# - le registre est en 192.168.2.4 ;
+# - et le personnel est en 192.168.2.5.
   bastion_port:
     type: OS::Neutron::Port
     properties:
@@ -91,6 +116,8 @@ resources:
         - subnet_id: { get_resource: gitlab_subnet}
           ip_address: 192.168.2.5
 
+#Toutes les machines sont des petites instances m1.small sauf le serveur gitlab qui est plus
+# volumineux m1.xlarge (gitlab est très gourmand).
   bastion:
     type: OS::Nova::Server
     properties:
@@ -102,22 +129,38 @@ resources:
         - port: { get_resource: bastion_port }
       user_data: |
         #!/bin/bash
+
+        #On fait pointer l'IP attribuée au nom d'hôte attribué.
+
         export IP=`ifconfig ens3 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
         export HOSTNAME=`hostname`
         tee -a /etc/hosts <<EOF
         $IP $HOSTNAME
         EOF
+
+        #On met des variables d'environnement pour que ce script puisse s'exécuter
+        # avec les serveurs proxy de l'école.
+
         export DEBIAN_FRONTEND=noninteractive
         export TERM="xterm"
+        export use_proxy=yes
+        export http_proxy="http://proxy.enst-bretagne.fr:8080"
+        export https_proxy="http://proxy.enst-bretagne.fr:8080"
+
+        #On ne met pas de proxy sur 192.168.2.3 car on veut avoir accès au serveur
+        # gitlab sans se faire rediriger par le proxy
+
+        export no_proxy=localhost,127.0.0.1,192.168.2.3
+
+        #On rend certaines variables persistantes. 
+
         echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
         localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
         echo "export http_proxy=http://proxy.enst-bretagne.fr:8080" >>   /etc/environment
         echo " export https_proxy=http://proxy.enst-bretagne.fr:8080 " >>   /etc/environment
         echo " export no_proxy=localhost,127.0.0.1,192.168.2.3 " >>   /etc/environment
-        export use_proxy=yes
-        export http_proxy="http://proxy.enst-bretagne.fr:8080"
-        export https_proxy="http://proxy.enst-bretagne.fr:8080"
-        export no_proxy=localhost,127.0.0.1,192.168.2.3
+
+        #On met à jour la liste des paquets du système.
         apt-get -y update
 
   gitlab:
@@ -131,25 +174,40 @@ resources:
         - port: { get_resource: gitlab_port }
       user_data: |
         #!/bin/bash
+
+        #On fait pointer l'IP attribuée au nom d'hôte attribué.
+
         export IP=`ifconfig ens3 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
         export HOSTNAME=`hostname`
         tee -a /etc/hosts <<EOF
         $IP $HOSTNAME
         EOF
+
+        #On met des variables d'environnement pour que ce script puisse s'exécuter avec les serveurs proxy de l'école.
+
         export DEBIAN_FRONTEND=noninteractive
         export TERM="xterm"
+        export use_proxy=yes
+        export http_proxy="http://proxy.enst-bretagne.fr:8080"
+        export https_proxy="http://proxy.enst-bretagne.fr:8080"
         echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
+
+        #On ne met pas de proxy sur 192.168.2.3 car on veut avoir accès au serveur
+        # gitlab sans se faire rediriger par le proxy
+
+        export no_proxy=localhost,127.0.0.1,192.168.2.3,projet_indu
+
+        #On rend certaines variables persistantes. 
+
         localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
         echo "export use_proxy=yes" >> /etc/environment
         echo "export http_proxy=http://proxy.enst-bretagne.fr:8080" >>   /etc/environment
         echo " export https_proxy=http://proxy.enst-bretagne.fr:8080 " >>   /etc/environment
         echo " export no_proxy=localhost,127.0.0.1,192.168.2.3 " >>   /etc/environment
-        #wget -P /home/ubuntu http://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_darwin_amd64
-        #chmod 700 /home/ubuntu/clair-scanner_darwin_amd64
-        export use_proxy=yes
-        export http_proxy="http://proxy.enst-bretagne.fr:8080"
-        export https_proxy="http://proxy.enst-bretagne.fr:8080"
-        export no_proxy=localhost,127.0.0.1,192.168.2.3
+        
+        # On configure Docker pour pouvoir pull des images depuis l'extérieur et
+        # on ajoute 192.168.2.4 (le registre) en insecure pour ne pas avoir à vérifier son certificat.
+
         mkdir -p /etc/systemd/system/docker.service.d
         echo "[Service]" > /etc/systemd/system/docker.service.d/proxy.conf
         echo "Environment='HTTPS_PROXY=http://proxy.enst-bretagne.fr:8080' 'HTTP_PROXY=http://proxy.enst-bretagne.fr:8080'" >> /etc/systemd/system/docker.service.d/proxy.conf
@@ -159,6 +217,9 @@ resources:
         echo '{' > /etc/docker/daemon.json
         echo '    "dns": ["192.44.75.10", "192.108.115.2"],"insecure-registries":["192.168.2.4:5000"]' >> /etc/docker/daemon.json
         echo '}' >> /etc/docker/daemon.json
+
+        #On met à jour la liste des paquets du système.
+
         apt-get -y update
 
   
@@ -173,23 +234,40 @@ resources:
         - port: { get_resource: registry_port }
       user_data: |
         #!/bin/bash
+
+        #On fait pointer l'IP attribuée au nom d'hôte attribué.
+
         export IP=`ifconfig ens3 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
         export HOSTNAME=`hostname`
         tee -a /etc/hosts <<EOF
         $IP $HOSTNAME
         EOF
+
+        #On met des variables d'environnement pour que ce script puisse s'exécuter avec les serveurs proxy de l'école.
+
         export DEBIAN_FRONTEND=noninteractive
         export TERM="xterm"
+        export use_proxy=yes
+        export http_proxy="http://proxy.enst-bretagne.fr:8080"
+        export https_proxy="http://proxy.enst-bretagne.fr:8080"
+        
+        #On ne met pas de proxy sur 192.168.2.3 car on veut avoir accès au serveur
+        # gitlab sans se faire rediriger par le proxy
+
+        export no_proxy=localhost,127.0.0.1,192.168.2.3
+        
+        #On rend certaines variables persistantes. 
+
         echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
         localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
         echo "export use_proxy=yes" >> /etc/environment
         echo "export http_proxy=http://proxy.enst-bretagne.fr:8080" >>   /etc/environment
         echo " export https_proxy=http://proxy.enst-bretagne.fr:8080 " >>   /etc/environment
         echo " export no_proxy=localhost,127.0.0.1,192.168.2.3 " >>   /etc/environment
-        export use_proxy=yes
-        export http_proxy="http://proxy.enst-bretagne.fr:8080"
-        export https_proxy="http://proxy.enst-bretagne.fr:8080"
-        export no_proxy=localhost,127.0.0.1,192.168.2.3
+
+        # On configure Docker pour pouvoir pull des images depuis l'extérieur et
+        # on ajoute 192.168.2.4 (le registre) en insecure pour ne pas avoir à vérifier son certificat.
+        
         mkdir -p /etc/systemd/system/docker.service.d
         echo "[Service]" > /etc/systemd/system/docker.service.d/proxy.conf
         echo "Environment='HTTPS_PROXY=http://proxy.enst-bretagne.fr:8080' 'HTTP_PROXY=http://proxy.enst-bretagne.fr:8080'" >> /etc/systemd/system/docker.service.d/proxy.conf
@@ -199,6 +277,9 @@ resources:
         echo '{' > /etc/docker/daemon.json
         echo '    "dns": ["192.44.75.10", "192.108.115.2"],"insecure-registries":["192.168.2.4:5000"]' >> /etc/docker/daemon.json
         echo '}' >> /etc/docker/daemon.json
+        
+        #On met à jour la liste des paquets du système.
+
         apt-get -y update
 
 
@@ -213,24 +294,37 @@ resources:
         - port: { get_resource: personnel_port }
       user_data: |
         #!/bin/bash
+        
+        #On fait pointer l'IP attribuée au nom d'hôte attribué.
+
         export IP=`ifconfig ens3 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
         export HOSTNAME=`hostname`
         tee -a /etc/hosts <<EOF
         $IP $HOSTNAME
         EOF
+        
+        #On met des variables d'environnement pour que ce script puisse s'exécuter avec les serveurs proxy de l'école.
+
         export DEBIAN_FRONTEND=noninteractive
         export TERM="xterm"
+        export use_proxy=yes
+        export http_proxy="http://proxy.enst-bretagne.fr:8080"
+        export https_proxy="http://proxy.enst-bretagne.fr:8080"
+        export no_proxy=localhost,127.0.0.1,192.168.2.3
+        
+        #On rend certaines variables persistantes. 
+
         echo 'Acquire::http::Proxy "http://apt-cacher-01.priv.enst-bretagne.fr:3142";' > /etc/apt/apt.conf.d/01proxy
         localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
         echo "export use_proxy=yes" >> /etc/environment
         echo "export http_proxy=http://proxy.enst-bretagne.fr:8080" >>   /etc/environment
         echo " export https_proxy=http://proxy.enst-bretagne.fr:8080 " >>   /etc/environment
         echo " export no_proxy=localhost,127.0.0.1,192.168.2.3 " >>   /etc/environment
-        export use_proxy=yes
-        export http_proxy="http://proxy.enst-bretagne.fr:8080"
-        export https_proxy="http://proxy.enst-bretagne.fr:8080"
-        export no_proxy=localhost,127.0.0.1,192.168.2.3
-        #export GIT_SSL_NO_VERIFY=true
+        
+
+        # On configure Docker pour pouvoir pull des images depuis l'extérieur et
+        # on ajoute 192.168.2.4 (le registre) en insecure pour ne pas avoir à vérifier son certificat.
+
         mkdir -p /etc/systemd/system/docker.service.d
         echo "[Service]" > /etc/systemd/system/docker.service.d/proxy.conf
         echo "Environment='HTTPS_PROXY=http://proxy.enst-bretagne.fr:8080' 'HTTP_PROXY=http://proxy.enst-bretagne.fr:8080'" >> /etc/systemd/system/docker.service.d/proxy.conf
@@ -240,16 +334,22 @@ resources:
         echo '{' > /etc/docker/daemon.json
         echo '    "dns": ["192.44.75.10", "192.108.115.2"],"insecure-registries":["192.168.2.4:5000"]' >> /etc/docker/daemon.json
         echo '}' >> /etc/docker/daemon.json
+
+        #On met à jour la liste des paquets du système.
+
         apt-get -y update
 
 
-
+#On configure deux associations vers des IP floattantes (on en peut pas créer d'IP flottantes)
+  
+  #IP flottante pour se connecter au bastion en ssh depuis l'extérieur.
   association_ssh:
     type: OS::Neutron::FloatingIPAssociation
     properties:
       floatingip_id: d8045f4a-b77d-474d-a430-bf9ec76c3553
       port_id: { get_resource: bastion_port }
-
+  
+  #IP flottante pour accéder à l'interface graphique de Gitlab depuis l'extérieur.
   association_gitlab:
     type: OS::Neutron::FloatingIPAssociation
     properties:
