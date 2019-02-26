@@ -8,9 +8,8 @@
 
   - name: pull db
     become: yes
-    shell: docker pull arminc/clair-db
+    shell: docker pull arminc/clair-db:2017-09-18
 
   - name: pull scanner
     become: yes
-    shell: docker pull arminc/clair-local-scan
-
+    shell: docker pull arminc/clair-local-scan:v2.0.6

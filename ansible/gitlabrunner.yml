@@ -1,4 +1,4 @@
-- hosts: "gitlab runner install"
+- hosts: "gitlab"
   roles:
     - role: lean_delivery.gitlab_runner
       vars:

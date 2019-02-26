@@ -13,6 +13,6 @@
 
   - name: register runner
     become: yes
-    shell: gitlab-runner register --non-interactive --url "https://localhost/" --registration-token "Cs2ZycqCJmNeHtKAztFC" --executor "shell" --shell "bash" --description "runner" --run-untagged
+    shell: gitlab-runner register --non-interactive --url "https://projetindu/" --registration-token "-iY4p3ZfvFcfzZWnpZJe" --executor "shell" --shell "bash" --description "runner" --run-untagged
 
 

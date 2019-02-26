@@ -132,7 +132,7 @@ resources:
 
         #On fait pointer l'IP attribuée au nom d'hôte attribué.
 
-        export IP=`ifconfig ens3 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+        export IP=$(ip addr show ens3 | grep -Po 'inet \K[\d.]+')
         export HOSTNAME=`hostname`
         tee -a /etc/hosts <<EOF
         $IP $HOSTNAME
@@ -162,11 +162,12 @@ resources:
 
         #On met à jour la liste des paquets du système.
         apt-get -y update
+        reboot
 
   gitlab:
     type: OS::Nova::Server
     properties:
-      name: gitlab
+      name: projetindu
       image: ubuntu_18_current
       flavor: m1.xlarge
       key_name: { get_param: key}
@@ -177,7 +178,7 @@ resources:
 
         #On fait pointer l'IP attribuée au nom d'hôte attribué.
 
-        export IP=`ifconfig ens3 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+        export IP=$(ip addr show ens3 | grep -Po 'inet \K[\d.]+')
         export HOSTNAME=`hostname`
         tee -a /etc/hosts <<EOF
         $IP $HOSTNAME
@@ -195,7 +196,7 @@ resources:
         #On ne met pas de proxy sur 192.168.2.3 car on veut avoir accès au serveur
         # gitlab sans se faire rediriger par le proxy
 
-        export no_proxy=localhost,127.0.0.1,192.168.2.3,projet_indu
+        export no_proxy=localhost,127.0.0.1,192.168.2.3,projetindu
 
         #On rend certaines variables persistantes. 
 
@@ -203,7 +204,7 @@ resources:
         echo "export use_proxy=yes" >> /etc/environment
         echo "export http_proxy=http://proxy.enst-bretagne.fr:8080" >>   /etc/environment
         echo " export https_proxy=http://proxy.enst-bretagne.fr:8080 " >>   /etc/environment
-        echo " export no_proxy=localhost,127.0.0.1,192.168.2.3 " >>   /etc/environment
+        echo " export no_proxy=localhost,127.0.0.1,192.168.2.3,projetindu " >>   /etc/environment
         
         # On configure Docker pour pouvoir pull des images depuis l'extérieur et
         # on ajoute 192.168.2.4 (le registre) en insecure pour ne pas avoir à vérifier son certificat.
@@ -221,7 +222,7 @@ resources:
         #On met à jour la liste des paquets du système.
 
         apt-get -y update
-
+        reboot
   
   registry:
     type: OS::Nova::Server
@@ -237,7 +238,7 @@ resources:
 
         #On fait pointer l'IP attribuée au nom d'hôte attribué.
 
-        export IP=`ifconfig ens3 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+        export IP=$(ip addr show ens3 | grep -Po 'inet \K[\d.]+')
         export HOSTNAME=`hostname`
         tee -a /etc/hosts <<EOF
         $IP $HOSTNAME
@@ -281,7 +282,7 @@ resources:
         #On met à jour la liste des paquets du système.
 
         apt-get -y update
-
+        reboot
 
   personnel:
     type: OS::Nova::Server
@@ -297,7 +298,7 @@ resources:
         
         #On fait pointer l'IP attribuée au nom d'hôte attribué.
 
-        export IP=`ifconfig ens3 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'`
+        export IP=$(ip addr show ens3 | grep -Po 'inet \K[\d.]+')
         export HOSTNAME=`hostname`
         tee -a /etc/hosts <<EOF
         $IP $HOSTNAME
@@ -338,7 +339,7 @@ resources:
         #On met à jour la liste des paquets du système.
 
         apt-get -y update
-
+        reboot
 
 #On configure deux associations vers des IP floattantes (on en peut pas créer d'IP flottantes)
   
