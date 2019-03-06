@@ -3,12 +3,23 @@
   
   tasks:
 
-  - name: ajout du repo gitlab-runner
-    shell: curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-ci-multi-runner/script.deb.sh | sudo bash
-
+  - name: Téléchargement
+    become: yes
+    shell: wget -O /usr/local/bin/gitlab-runner http://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64
+    
+  - name: install de gitlab-runner
+    become: yes
+    shell: chmod +x /usr/local/bin/gitlab-runner
 
   - name: install de gitlab-runner
     become: yes
-    shell: apt-get install gitlab-ci-multi-runner -y
+    shell: useradd --comment 'GitLab Runner' --create-home gitlab-runner --shell /bin/bash
 
+  - name: install de gitlab-runner
+    become: yes
+    shell: gitlab-runner install --user=gitlab-runner --working-directory=/home/gitlab-runner
+
+  - name: install de gitlab-runner
+    become: yes
+    shell: gitlab-runner start
 

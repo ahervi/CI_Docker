@@ -203,8 +203,10 @@ resources:
         localectl set-locale LANG=en_US.UTF-8 LANGUAGE="en_US:en"
         echo "export use_proxy=yes" >> /etc/environment
         echo "export http_proxy=http://proxy.enst-bretagne.fr:8080" >>   /etc/environment
-        echo " export https_proxy=http://proxy.enst-bretagne.fr:8080 " >>   /etc/environment
-        echo " export no_proxy=localhost,127.0.0.1,192.168.2.3,projetindu " >>   /etc/environment
+        echo "export https_proxy=http://proxy.enst-bretagne.fr:8080 " >>   /etc/environment
+        echo "export no_proxy=localhost,127.0.0.1,192.168.2.3,projetindu " >>   /etc/environment
+        echo "export DEBIAN_FRONTEND=noninteractive " >>   /etc/environment
+        echo "export TERM="xterm"" >>   /etc/environment
         
         # On configure Docker pour pouvoir pull des images depuis l'extérieur et
         # on ajoute 192.168.2.4 (le registre) en insecure pour ne pas avoir à vérifier son certificat.
