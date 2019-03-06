@@ -42,8 +42,8 @@ ansible-playbook -i inventory -u ubuntu --private-key ../mykey gitlab.yml
 
 #On installe gitlab-runner pour la CI sur la machine gitlab à partir du playbook 
 # ansible galaxy pour gitlab-runner de lean_delivery
-ansible-playbook -i inventory -u ubuntu --private-key ../mykey gitlabrunner.yml
-
+#ansible-playbook -i inventory -u ubuntu --private-key ../mykey gitlabrunner.yml
+ansible-playbook -i inventory -u ubuntu --private-key ../mykey gitlab-runner-perso.yml
 #Pour enrgister un nouveau runner, il nous faut le registration token de gitlab et c'est l'utilisateur qui doit le fournir.
 read -p "Connecter vous à https://10.29.244.29/admin/runners, changer le mot de passe de root sur le gitlab, se connecter en tant que root avec le mot de passe choisi et copier le registration token du runner ici : " TOKEN
 
