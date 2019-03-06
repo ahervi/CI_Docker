@@ -5,17 +5,16 @@
 
 #Installation de la CLI pour OpenStack :
 sudo apt update
-sudo apt install python3-pip
+sudo apt install python3-pip -y
 sudo -H pip3 install python-openstackclient 
 sudo -H pip3 install openstack-heat
 sudo -H pip3 install cmd2==0.7.3
 
 #Installation de Ansible
-sudo apt update
-sudo apt-get install software-properties-common
+sudo apt-get install software-properties-common -y
 sudo apt-add-repository ppa:ansible/ansible
 sudo apt update
-sudo apt install ansible
+sudo apt install ansible -y
 
 #Misc :
 #  Dans le dossier ansible, il y a un dossier group_vars qui contient docker.yml contenant :

@@ -18,7 +18,7 @@ sleep 10
 
 #On crée la stack en elle-même à partir du tempalte Heat clair-stack.yml
 openstack --insecure stack create --template clair-stack.yml --parameter key=MYKEY MYSTACK
-sleep 120
+sleep 180
 
 #On nettoie le fichier ~/.ssh/known_hosts car les clés changent à chaque fois.
 IP_FLOTTANTE_BASTION="10.29.244.44"
