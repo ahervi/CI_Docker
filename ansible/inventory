@@ -9,3 +9,6 @@ registrehost ansible_host=192.168.2.4 ansible_python_interpreter=/usr/bin/python
 [registry]
 registrehost ansible_host=192.168.2.4 ansible_python_interpreter=/usr/bin/python3
 
+[personnel]
+personnelhost ansible_host=192.168.2.5 ansible_python_interpreter=/usr/bin/python3
+
