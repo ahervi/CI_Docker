@@ -343,6 +343,8 @@ resources:
         apt-get -y update
         reboot
 
+
+
 #On configure deux associations vers des IP floattantes (on en peut pas créer d'IP flottantes)
   
   #IP flottante pour se connecter au bastion en ssh depuis l'extérieur.
