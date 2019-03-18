@@ -19,8 +19,6 @@ parameters:
     description: MYKEY
 
 
-
-
 resources:
 #Les groupes de sécurité sont permissifs pour l'instant, ils pourront être restreints plus tard
 # si le temps le permet.
@@ -31,7 +29,16 @@ resources:
     properties:
       description: "Open all the ports inside the production network"
       rules:
-        - remote_ip_prefix: 0.0.0.0/0
+      - protocol: icmp
+      - protocol: tcp
+        port_range_min: 22
+        port_range_max: 22
+      - protocol: tcp
+        port_range_min: 443
+        port_range_max: 443
+      - protocol: tcp
+        port_range_min: 80
+        port_range_max: 80
 
   #Le groupe de sécurité vers l'extérieur : seul SSH et ICMP sont autorisés.
   external_security_group:
@@ -43,6 +50,9 @@ resources:
       - protocol: tcp
         port_range_min: 22
         port_range_max: 22
+      - protocol: tcp
+        port_range_min: 443
+        port_range_max: 443
   
 #Le sous réseaux du LAN est simple : 192.168.2.0/24
   gitlab_net:
@@ -93,7 +103,7 @@ resources:
     type: OS::Neutron::Port
     properties:
       network_id: { get_resource: gitlab_net}
-      security_groups: [ get_resource: prod_security_group]
+      security_groups: [ get_resource: external_security_group]
       fixed_ips:
         - subnet_id: { get_resource: gitlab_subnet}
           ip_address: 192.168.2.3
