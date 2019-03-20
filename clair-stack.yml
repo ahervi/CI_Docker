@@ -23,7 +23,7 @@ resources:
 #Les groupes de sécurité sont permissifs pour l'instant, ils pourront être restreints plus tard
 # si le temps le permet.
 
-  #Le groupe de sécurité du LAN interne : tout est autorisé pour l'instant.
+  #Le groupe de sécurité du LAN interne : SSH, HTTP et HTTPS
   prod_security_group:
     type: OS::Neutron::SecurityGroup
     properties:
